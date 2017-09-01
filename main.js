@@ -11,7 +11,7 @@ function wrnPrint(text) {
 
 var configPath = "./res/cfg/";
 
-var mysql = require('mysql'); //MySQL API
+var mysql = require("mysql"); //MySQL API
 var fs = require("fs"); //file reader
 var mysqlCreds = JSON.parse(fs.readFileSync(configPath + "mysql.json")); //read and parse the MySQL login details
 var con = mysql.createConnection({
@@ -37,8 +37,28 @@ function querySQL(cmd, data) {
 	return dataPromise;
 } //end querySQL()
 
+/*var nodemailer = require("nodemailer");
+var mailCreds = JSON.parse(fs.readFileSync(configPath + "nodemailer.json"));
+var transporter = nodemailer.createTransport({
+	service: mailCreds.service,
+	auth: mailCreds.auth
+});
+
+function sendMail(recip, subject, content) {
+	var mailOptions = {
+		from: mailCreds.auth.user,
+		to: recip,
+		subject: subject,
+		html: content
+	};
+
+	transporter.sendMail(mailOptions, function(error, info){
+		if(error) errPrint("in mailing!\n" + error);
+	});
+}//end sendMail()*/
+
 var MailListener = require("mail-listener2"); //email API
-var mailCreds = JSON.parse(fs.readFileSync(configPath + "mail.json")); //read and parse the email login details
+var mailCreds = JSON.parse(fs.readFileSync(configPath + "mail-listener.json")); //read and parse the email login details
 var mailListener = new MailListener({
 	username: mailCreds.username,
 	password: mailCreds.password, //log in
@@ -61,7 +81,8 @@ mailListener.on("server:disconnected", function() {
 mailListener.on("mail", function(mail, seqno, attributes) {
 	var from = []; //for passing data into MySQL
 	from[0] = mail.from[0].address; //isolate the email address
-	switch(mail.headers.subject.toLowerCase().trim()) {
+	var subject = mail.headers.subject.toLowerCase().trim();
+	switch(subject) {
 		case "subscribe": //user wants to be added
 			var cmd = "SELECT * FROM v5 WHERE email = ?;"; //look for that user...
 			querySQL(cmd, from).then(function(fromResolve) {
@@ -89,6 +110,13 @@ mailListener.on("mail", function(mail, seqno, attributes) {
 			mailListener.imap.addFlags(attributes.uid, "\\Seen");
 		break; //end case "usubscribe"
 		default:
+			if((subject.startsWith("su") || subject.startsWith("uns") || subject.endsWith("be")) && (subject.length > 6 && subject.length < 15)) {
+				/*sendMail(from[0], "You might have misspelled your email title",
+					"If you were trying to sign up to PRUN recently, you might have misspelled you email subject. Please resend it (you weren't added!), or ignore this email.\n" + 
+					"Your input was " + subject + " insted of subscribe or unsubscribe.\n" + 
+					"This email is from an automated system.");*/
+				mailListener.imap.addFlags(attributes.uid, "\\Seen");
+			}
 		break;
 	} //end switch(mail subject)
 }); //end mailListener.on("mail")
@@ -97,7 +125,6 @@ var http = require("http");
 var port = 80;
 var forbiddenFiles = [configPath + "mysqlConfig.json", configPath + "mailConfig.json"];
 var landingPage = "./index.html"; //the page you get when you request "/"
-
 
 http.createServer(function(request, response) { //on every request to the server:
 	var filePath = "." + request.url;

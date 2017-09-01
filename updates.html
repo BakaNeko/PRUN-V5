@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>About PRUN</title>
+	<script src="/res/js/jQuery.js"></script>
+	<script src="/res/js/index.js"></script>
+	<style>
+		body {
+				font-family: "Trebuchet MS", "Arial";
+				text-align: center;
+				margin: 0% auto;
+				overflow: hidden;
+			}
+
+			#background { /*Background image - the last update panel*/
+				min-height: 100%;
+				min-width: 100%;
+				left: 0;
+				top: -30%;
+				position: fixed;
+				opacity: 0.2;
+				z-index: -1;
+			}
+
+			#centered {
+				margin: 0% auto;
+				padding-top: 7%;
+			}
+
+			#centered p {
+				padding-right: 12%;
+				padding-left: 12%;
+				text-align: left;
+			}
+
+			#bar {
+				width: 100%;
+				top: 0%;
+				margin: 0%;
+				position: absolute;
+				background-color: black;
+				padding: 0.5%;
+			}
+
+			#bar a:link, #bar a:visited {
+				color: white;
+			}
+
+			#bar .padded {
+				padding-left: 5%;
+			}
+
+			#bar a:hover {
+				
+			}
+
+			#banner {
+				left: 1%;
+				color: white;
+				position: absolute;
+			}
+
+			.rot {
+				-ms-transform: skewX(-15deg);
+				-webkit-transform: skewX(-15deg);
+				transform: skewX(-15deg);
+
+				background-color: black;
+				color: white;
+				padding: 0.5%;
+				padding-right: 3%;
+				padding-left: 3%;
+				display: inline-block;
+			}
+
+			.backrot {
+				-ms-transform: skewX(15deg); /*Internet Explorer*/
+				-webkit-transform: skewX(15deg); /*Safari*/
+				transform: skewX(15deg); /*As it should be*/
+			}
+
+			::selection { /*most browsers*/
+				background-color: #4d905a;
+			}
+			::-moz-selection { /*mozilla*/
+				background-color: #4d905a;
+			}
+			/*other browsers*/
+			::-o-selection {
+				background-color: #4d905a;
+			}
+			::-ms-selection {
+				background-color: #4d905a;
+			}
+			::-webkit-selection { /*webkit*/
+				background-color: #4d905a;
+			}
+	</style>
+</head>
+<img id="background" src="http://www.praguerace.com/comics/1444236716-sihti.jpg">
+<body>
+	<div id="bar">
+		<span id="banner"><b>Prague Race Update Notifier</b></span>
+		<a href="/updates.html">Get email updates!</a>
+		<a href="/" class="padded">Update details</a>
+		<a href="http://praguerace.com" class="padded">Prague Race's website</a>
+	</div>
+
+	<div id="centered">
+		<div class="rot">
+			<h2 class="backrot">What are the emails like?</h2>
+		</div>
+		<p>idfk</p>
+	</div>
+</body>
+</html>

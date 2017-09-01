@@ -1,6 +1,6 @@
 {
-"host": "localhost",
-"user": "root",
-"password": "please",
-"database": "prun"
+	"host": "localhost",
+	"user": "root",
+	"password": "please",
+	"database": "prun"
 }
