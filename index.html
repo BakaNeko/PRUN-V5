@@ -2,23 +2,111 @@
 <html>
 <head>
 	<title>Prague Race Updates</title>
+	<script src="/res/js/jQuery.js"></script>
+	<script src="/res/js/index.js"></script>
 	<style>
+		body {
+				font-family: "Trebuchet MS", "Arial";
+				text-align: center;
+				margin: 0% auto;
+				overflow: hidden;
+			}
+
+			#background { /*Background image - the last update panel*/
+				min-height: 100%;
+				min-width: 100%;
+				right: 0%;
+				position: fixed;
+				opacity: 0.35;
+				z-index: -1;
+			}
+
+			#centered {
+				margin: 0% auto;
+				padding-top: 15%;
+			}
+
+			#bar {
+				width: 100%;
+				top: 0%;
+				margin: 0%;
+				position: absolute;
+				background-color: black;
+				padding: 0.5%;
+			}
+
+			#bar a:link, #bar a:visited {
+				color: white;
+			}
+
+			#bar .padded {
+				padding-left: 5%;
+			}
+
+			#bar a:hover {
+				
+			}
+
+			#banner {
+				left: 1%;
+				color: white;
+				position: absolute;
+			}
+
+			.rot {
+				-ms-transform: skewX(-15deg);
+				-webkit-transform: skewX(-15deg);
+				transform: skewX(-15deg);
+
+				background-color: black;
+				color: white;
+				padding: 0.5%;
+				padding-right: 3%;
+				padding-left: 3%;
+				display: inline-block;
+			}
+
+			.backrot {
+				-ms-transform: skewX(15deg); /*Internet Explorer*/
+				-webkit-transform: skewX(15deg); /*Safari*/
+				transform: skewX(15deg); /*As it should be*/
+			}
+
+			::selection { /*most browsers*/
+				background-color: #4d905a;
+			}
+			::-moz-selection { /*mozilla*/
+				background-color: #4d905a;
+			}
+			/*other browsers*/
+			::-o-selection {
+				background-color: #4d905a;
+			}
+			::-ms-selection {
+				background-color: #4d905a;
+			}
+			::-webkit-selection { /*webkit*/
+				background-color: #4d905a;
+			}
 	</style>
 </head>
-<img id="background" src="IMGME">
+<img id="background" alt="Could not display the last panel.">
 <body>
+	<div id="bar">
+		<span id="banner"><b>Prague Race Update Notifier</b></span>
+		<a href="/updates.html">Get email updates!</a>
+		<a href="/about.html" class="padded">What is this?</a>
+		<a href="http://praguerace.com" class="padded">Prague Race's website</a>
+	</div>
+
 	<div id="centered">
 		<div class="rot">
-			<h1 class="backrot" id="title">TITLEME</h1>
+			<h1 class="backrot" id="title">Stand by...</h1>
 		</div>
 		<br><br><br><br>
 		<div class="rot">
-			<h1 class="backrot" id="time">DATEME</h1> <!--forever alon(e) :') -->
+			<h1 class="backrot" id="time">Stand by...</h1> <!--forever alon(e) :') -->
 		</div>
-	</div>
-	<div id="bottom">
-		<p><a href="/updates/html">Get email updates!</a></p>
-		<p><a href="/about.html">What is this?</a></p>
 	</div>
 </body>
 </html>
