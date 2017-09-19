@@ -37,32 +37,35 @@ function querySQL(cmd, data) {
 	return dataPromise;
 } //end querySQL()
 
-/*var nodemailer = require("nodemailer");
-var mailCreds = JSON.parse(fs.readFileSync(configPath + "nodemailer.json"));
-var transporter = nodemailer.createTransport({
-	service: mailCreds.service,
-	auth: mailCreds.auth
-});
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; //nyet, tovarisch
+//issues with mail-listener2 force me to employ this line, will find a permanent fix later
+
+var nodemailer = require("nodemailer");
+var mailerCreds = JSON.parse(fs.readFileSync(configPath + "nodemailer.json"));
 
 function sendMail(recip, subject, content) {
 	var mailOptions = {
-		from: mailCreds.auth.user,
+		from: mailerCreds.auth.user,
 		to: recip,
 		subject: subject,
 		html: content
 	};
 
+	var transporter = nodemailer.createTransport({
+		service: mailerCreds.service,
+		auth: mailerCreds.auth
+	});
 	transporter.sendMail(mailOptions, function(error, info){
 		if(error) errPrint("in mailing!\n" + error);
 	});
-}//end sendMail()*/
+}//end sendMail()
 
 var MailListener = require("mail-listener2"); //email API
-var mailCreds = JSON.parse(fs.readFileSync(configPath + "mail-listener.json")); //read and parse the email login details
+var listenerCreds = JSON.parse(fs.readFileSync(configPath + "mail-listener.json")); //read and parse the email login details
 var mailListener = new MailListener({
-	username: mailCreds.username,
-	password: mailCreds.password, //log in
-	host: mailCreds.host,
+	username: listenerCreds.username,
+	password: listenerCreds.password, //log in
+	host: listenerCreds.host,
 	port: 993,
 	tls: true,
 	mailbox: "INBOX",
@@ -72,10 +75,10 @@ var mailListener = new MailListener({
 mailListener.start(); //start listening 
 
  mailListener.on("server:connected", function() {
-	console.log("Connected to email.");
+	wrnPrint("Connected to email.");
 });
 mailListener.on("server:disconnected", function() {
-	console.log("Disconnected from email!");
+	errPrint("Disconnected from email!");
 	mailListener.start(); //reconnect
 });
 mailListener.on("mail", function(mail, seqno, attributes) {
@@ -89,16 +92,16 @@ mailListener.on("mail", function(mail, seqno, attributes) {
 				if(!fromResolve[0]) { //and if there were no results...
 					cmd = "INSERT INTO v5 (email) VALUES (?);"; //...add them
 					querySQL(cmd, from).then(function() {
-						console.log("Added " + from[0]);
+						console.log("Added " + from[0] + ", welcome!");
 					}).catch(function(fromReject) { //catch for INSERT
-						console.log("Could not add user " + from[0] + ":\n" + fromReject);
+						errPrint("Could not add user " + from[0] + ":\n" + fromReject);
 					});
 				} //end if(!fromResolve[0])
 				else { //if there was a result in the email lookup
-					console.log(from[0] + " already exists!");
+					wrnPrint(from[0] + " already exists!");
 				}
 			}).catch(function(fromReject) { //catch for SELECT
-				console.log(fromReject);
+				errPrint("Could not add user because could not query for user! " + from[0] + "\n" +  fromReject);
 			});
 
 			mailListener.imap.addFlags(attributes.uid, "\\Seen");
@@ -106,15 +109,15 @@ mailListener.on("mail", function(mail, seqno, attributes) {
 		case "unsubscribe":
 			var cmd = "DELETE FROM v5 WHERE email = ?;";
 			querySQL(cmd, from);
-			console.log("Removed " + from[0]);
+			console.log("Removed " + from[0] + ". Check for feedback in unsubscribe emails.");
 			mailListener.imap.addFlags(attributes.uid, "\\Seen");
 		break; //end case "usubscribe"
 		default:
-			if((subject.startsWith("su") || subject.startsWith("uns") || subject.endsWith("be")) && (subject.length > 6 && subject.length < 15)) {
-				/*sendMail(from[0], "You might have misspelled your email title",
+			if(((subject.startsWith("su") || subject.startsWith("uns") || subject.endsWith("be")) && (subject.length > 6 && subject.length < 15)) && subject != "subscribe" && subject != "unsubscribe") {
+				sendMail(from[0], "You might have misspelled your email title",
 					"If you were trying to sign up to PRUN recently, you might have misspelled you email subject. Please resend it (you weren't added!), or ignore this email.\n" + 
 					"Your input was " + subject + " insted of subscribe or unsubscribe.\n" + 
-					"This email is from an automated system.");*/
+					"This email is from an automated system.");
 				mailListener.imap.addFlags(attributes.uid, "\\Seen");
 			}
 		break;

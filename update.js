@@ -8,8 +8,10 @@ var client = new insp("http://praguerace.com/", { //crawling config
 
 var intervalTime = 2 * 60 * 1000; //two minutes
 
+var eol = require('os').EOL;
+
 var fs = require("fs"); //for readng the files
-var title = fs.readFileSync("./update.txt").toString().split("\n")[1]; //stores the page's title
+var title = fs.readFileSync("./update.txt").toString().split(eol)[1]; //stores the page's title
 var configPath = "./res/cfg/";
 
 var colors = require("colors"); //for fancy console
@@ -46,21 +48,24 @@ function querySQL(cmd) {
 	return dataPromise;
 } //end querySQL()
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; //nyet, tovarisch
+//issues with mail-listener2 force me to employ this line, will find a permanent fix later
+
 var nodemailer = require("nodemailer");
 var mailCreds = JSON.parse(fs.readFileSync(configPath + "nodemailer.json"));
-var transporter = nodemailer.createTransport({
-	service: mailCreds.service,
-	auth: mailCreds.auth
-});
 
-function sendMail(recip) {
+function sendMail(recip, title, time) {
 	var mailOptions = {
 		from: mailCreds.auth.user,
 		to: recip,
 		subject: "Prague Race just updated!",
-		html: fs.readFileSync("./resources/email.html")
+		html: fs.readFileSync("./res/email.html").toString().replace("TITLEME", title).replace("TIMEME", time)
 	};
 
+	var transporter = nodemailer.createTransport({
+		service: mailCreds.service,
+		auth: mailCreds.auth
+	});
 	transporter.sendMail(mailOptions, function(error, info){
 		if(error) errPrint("in mailing!\n" + error);
 		else wrnPrint("Email sent.");
@@ -79,7 +84,7 @@ function testEmail(email) {
 
 client.on("fetch", function(){ //when client.fetch() is called
 	try {
-		title = fs.readFileSync("./update.txt").toString().split("\n")[1]; //read the current data
+		title = fs.readFileSync("./update.txt").toString().split(eol)[1]; //read the current data
 		if(client.title != title) { //if the title changed - new page!
 			title = client.title;
 
@@ -87,9 +92,9 @@ client.on("fetch", function(){ //when client.fetch() is called
 			.split("<br>")[0].split("posted ")[1] + " EST"; //remove excess HTML/data
 			time = time.toString().replace("pm", "PM");
 
-			fs.writeFile("./update.txt", time + "\n" + client.title + "\n" + client.images[0]); //change update.txt
+			fs.writeFile("./update.txt", time + eol + client.title + eol + client.images[0]); //change update.txt
 			wrnPrint("UPDATED! on " + time + ": " + client.title); //woo
-			console.log("Recoginzed on " + now() + "\n");
+			console.log("Recoginzed on " + new Date().toString() + eol);
 
 			/*var cmd = "SELECT email FROM v4 WHERE updates = 'y';";
 			querySQL(cmd).then(function(data) { //wait for the promise
@@ -108,7 +113,7 @@ client.on("fetch", function(){ //when client.fetch() is called
 				for(i = 0; i < data.length; i ++) { //for every row in the table
 					if(testEmail(data[i].email)) allEmails[i] = data[i].email;
 				}
-				sendMail()
+				sendMail(allEmails.toString(), title, time);
 			});
 		}//end if
 	}//end try
@@ -121,7 +126,7 @@ client.on("error", function(err) { //if an error occures
 	errPrint(err);
 });
 
-console.log("Starting now, " + now() + ".");
+console.log("Starting now, " + new Date().toString() + ".");
 if(((intervalTime / 1000) / 60) == 0) {
 	console.log("Checking at interval of " + (intervalTime / 1000) + " seconds.\n");
 }
