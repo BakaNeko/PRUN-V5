@@ -59,7 +59,7 @@ function sendMail(recip, title, time) {
 		from: mailCreds.auth.user,
 		to: recip,
 		subject: "Prague Race just updated!",
-		html: fs.readFileSync("./res/email.html").toString().replace("TITLEME", title).replace("TIMEME", time)
+		html: fs.readFileSync("./res/updateEmail.html").toString().replace("TITLEME", title).replace("TIMEME", time)
 	};
 
 	var transporter = nodemailer.createTransport({
@@ -77,7 +77,7 @@ function testEmail(email) {
 		return true;
 	}
 	else {
-		errPrint("Illegal email!");
+		errPrint("Illegal email!" + email);
 		return false;
 	}
 } //end testEmail()
@@ -92,7 +92,9 @@ client.on("fetch", function(){ //when client.fetch() is called
 			.split("<br>")[0].split("posted ")[1] + " EST"; //remove excess HTML/data
 			time = time.toString().replace("pm", "PM");
 
-			fs.writeFile("./update.txt", time + eol + client.title + eol + client.images[0]); //change update.txt
+			fs.writeFile("./update.txt", time + eol + client.title + eol + client.images[0], function(){
+				console.log("Updated file.");
+			}); //change update.txt
 			wrnPrint("UPDATED! on " + time + ": " + client.title); //woo
 			console.log("Recoginzed on " + new Date().toString() + eol);
 
@@ -127,10 +129,10 @@ client.on("error", function(err) { //if an error occures
 });
 
 console.log("Starting now, " + new Date().toString() + ".");
-if(((intervalTime / 1000) / 60) == 0) {
+if(((intervalTime / 1000) / 60) > 1) { //it will return a fraction if it's less than a minute
 	console.log("Checking at interval of " + (intervalTime / 1000) + " seconds.\n");
 }
-else {
+else { //otherwise it'll be larger/equal to 1
 	console.log("Checking at interval of " + ((intervalTime / 1000) / 60) + " minutes.\n");
 }
 client.fetch(); //initialization

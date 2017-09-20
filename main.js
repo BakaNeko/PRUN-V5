@@ -1,5 +1,15 @@
-var colors = require("colors"); //awsome console
+/*
+  __      __                            __
+ /__)    /__)    /  /    /| )  __  (  //_ 
+/    .  / (  .  (__/ .  / |/       |_/ __)
 
+ * Made by Alon Shiboleth and Idan Lerman
+ * Prague Race by Petra Nordlund
+ * github.com/chickenCabbage/PRUN-V5
+ 
+ */
+
+var colors = require("colors"); //awsome console
 function errPrint(text) {
 	console.log("\n--------------------");
 	console.log(colors.red("ERROR: ") + text);
@@ -10,9 +20,9 @@ function wrnPrint(text) {
 }
 
 var configPath = "./res/cfg/";
+var fs = require("fs"); //file reader
 
 var mysql = require("mysql"); //MySQL API
-var fs = require("fs"); //file reader
 var mysqlCreds = JSON.parse(fs.readFileSync(configPath + "mysql.json")); //read and parse the MySQL login details
 var con = mysql.createConnection({
 	host: mysqlCreds.host,
@@ -114,10 +124,7 @@ mailListener.on("mail", function(mail, seqno, attributes) {
 		break; //end case "usubscribe"
 		default:
 			if(((subject.startsWith("su") || subject.startsWith("uns") || subject.endsWith("be")) && (subject.length > 6 && subject.length < 15)) && subject != "subscribe" && subject != "unsubscribe") {
-				sendMail(from[0], "You might have misspelled your email title",
-					"If you were trying to sign up to PRUN recently, you might have misspelled you email subject. Please resend it (you weren't added!), or ignore this email.\n" + 
-					"Your input was " + subject + " insted of subscribe or unsubscribe.\n" + 
-					"This email is from an automated system.");
+				sendMail(from[0], "You might have misspelled your email title", fs.readFileSync("./res/titleEmail.html").toString().replace("SUBME", subject));
 				mailListener.imap.addFlags(attributes.uid, "\\Seen");
 			}
 		break;
@@ -125,7 +132,7 @@ mailListener.on("mail", function(mail, seqno, attributes) {
 }); //end mailListener.on("mail")
 
 var http = require("http");
-var port = 80;
+var port = 7007;
 var forbiddenFiles = [configPath + "mysqlConfig.json", configPath + "mailConfig.json"];
 var landingPage = "./index.html"; //the page you get when you request "/"
 
@@ -169,13 +176,14 @@ http.createServer(function(request, response) { //on every request to the server
 	catch(error) {
 		if(error.code == "ENOENT") { //the file wasn't found
 			serveError(404, "404, file not found", request, response);
-			wrnPrint("Could not find file " + filePath);
+			console.log("Could not find file " + filePath);
 		}
 		else {
 			serveError(500, "500: " + error.toString().replace("Error: ", ""), request, response);
 		}
 	} //end catch
 }).listen(port); //end http.createServer()
+wrnPrint("Listening on port " + port + ".");
 
 function serveError(code, text, request, response) { //internal server error
 	try {
